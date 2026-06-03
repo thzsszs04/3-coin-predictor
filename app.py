@@ -4,6 +4,7 @@ import html
 import json
 import locale
 import os
+import pickle
 import re
 import ssl
 from datetime import datetime
@@ -30,6 +31,7 @@ from src.predictor import COIN_OPTIONS, DEFAULT_DATA_PATH, MODEL_OPTIONS, load_d
 APP_TITLE = "3-Coin Predictor"
 TIMEZONE = ZoneInfo("Asia/Jakarta")
 STYLE_PATH = Path(__file__).with_name("style.css")
+PRECOMPUTED_RESULTS_PATH = Path(__file__).with_name("data") / "precomputed_results.pkl"
 AI_INSIGHT_CACHE_VERSION = "backtest-visible-context-v13"
 
 TEXT = {
@@ -2679,6 +2681,9 @@ def style_comparison_chart(fig: go.Figure) -> go.Figure:
 
 @st.cache_data(ttl=86400, show_spinner=False)
 def run_model_comparison(coin_name: str, data_path: str) -> dict[str, object]:
+    result = precomputed_comparison_result(coin_name)
+    if result is not None:
+        return result
     configure_runtime_flags()
     results = {
         model_name: run_prediction(
@@ -2963,8 +2968,42 @@ def get_dataset_frame() -> pd.DataFrame:
     return load_dataset(DEFAULT_DATA_PATH)
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_precomputed_results() -> dict[str, object] | None:
+    if not PRECOMPUTED_RESULTS_PATH.exists():
+        return None
+    try:
+        with PRECOMPUTED_RESULTS_PATH.open("rb") as file:
+            return pickle.load(file)
+    except (OSError, pickle.PickleError, EOFError, AttributeError):
+        return None
+
+
+def precomputed_prediction_result(coin_name: str, model_name: str, days: int) -> dict[str, object] | None:
+    bundle = load_precomputed_results()
+    if not bundle:
+        return None
+    result = bundle.get("predictions", {}).get((coin_name, model_name, int(days)))
+    if isinstance(result, dict):
+        return result
+    return None
+
+
+def precomputed_comparison_result(coin_name: str) -> dict[str, object] | None:
+    bundle = load_precomputed_results()
+    if not bundle:
+        return None
+    result = bundle.get("comparisons", {}).get(coin_name)
+    if isinstance(result, dict):
+        return result
+    return None
+
+
 @st.cache_data(ttl=86400, show_spinner=False)
 def cached_prediction_result(coin_name: str, model_name: str, days: int) -> dict[str, object]:
+    result = precomputed_prediction_result(coin_name, model_name, days)
+    if result is not None:
+        return result
     configure_runtime_flags()
     return run_prediction(
         coin_name=coin_name,

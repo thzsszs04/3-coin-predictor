@@ -37,6 +37,18 @@ FAST_SARIMAX = "1"
 
 Do not commit `.streamlit/secrets.toml`. It is ignored by `.gitignore`.
 
+## Precomputed Forecast Snapshot
+
+The deployed app uses `data/precomputed_results.pkl` to load homepage prediction and model-comparison results quickly without retraining on every visitor click. The live market overview remains live, while backtesting remains dynamic because users can choose many historical dates.
+
+To refresh the snapshot with current rolling market data:
+
+```bash
+python3 scripts/precompute_results.py
+```
+
+Commit the updated `data/precomputed_results.pkl` after regenerating it.
+
 ## Recommended Deployment
 
 This project is a Streamlit app, so the recommended public deployment target is Streamlit Community Cloud.
