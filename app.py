@@ -1545,7 +1545,7 @@ def build_sidebar() -> str:
             active = "active" if key == selected_page else ""
             href = f"?page={key}&lang={language}"
             tag = "div" if active else "a"
-            href_attr = "" if active else f' href="{href}"'
+            href_attr = "" if active else f' href="{href}" target="_self"'
             aria_current = ' aria-current="page"' if active else ""
             st.markdown(
                 f"""
