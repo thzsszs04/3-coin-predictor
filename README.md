@@ -32,6 +32,7 @@ Create `.streamlit/secrets.toml` locally:
 ```toml
 GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
 GEMINI_MODEL = "gemini-2.0-flash"
+FAST_SARIMAX = "1"
 ```
 
 Do not commit `.streamlit/secrets.toml`. It is ignored by `.gitignore`.
@@ -54,6 +55,7 @@ app.py
 ```toml
 GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
 GEMINI_MODEL = "gemini-2.0-flash"
+FAST_SARIMAX = "1"
 ```
 
 6. Deploy.

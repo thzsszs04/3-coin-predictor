@@ -2319,8 +2319,12 @@ def request_gemini_insight(prompt: str, api_key: str, model_name: str, cache_ver
 
 def insight_text_to_html(text: str, require_numbered_start: bool = True) -> str:
     lines = [line.strip() for line in text.strip().splitlines() if line.strip()]
-    while require_numbered_start and lines and not re.match(r"^(#{1,6}\s*)?1\.\s+", lines[0]):
-        lines.pop(0)
+    original_lines = lines.copy()
+    if require_numbered_start:
+        while lines and not re.match(r"^(#{1,6}\s*)?1\.\s+", lines[0]):
+            lines.pop(0)
+        if not lines:
+            lines = original_lines
     if not lines:
         return "<p>Insight AI belum tersedia.</p>"
     html_lines = []
@@ -2903,6 +2907,32 @@ def ensure_defaults() -> None:
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_dataset_frame() -> pd.DataFrame:
     return load_dataset(DEFAULT_DATA_PATH)
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def cached_prediction_result(coin_name: str, model_name: str, days: int) -> dict[str, object]:
+    return run_prediction(
+        coin_name=coin_name,
+        model_name=model_name,
+        data_path=DEFAULT_DATA_PATH,
+        days=days,
+    )
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def cached_backtesting_result(
+    coin_name: str,
+    model_name: str,
+    cutoff_date_iso: str,
+    days: int,
+) -> dict[str, object]:
+    return run_backtesting(
+        coin_name=coin_name,
+        model_name=model_name,
+        cutoff_date=pd.Timestamp(cutoff_date_iso),
+        data_path=DEFAULT_DATA_PATH,
+        days=days,
+    )
 
 
 def describe_variable(column: str) -> tuple[str, str, str]:
@@ -3548,12 +3578,7 @@ def render_prediction_page() -> None:
             st.warning(t("select_warning"))
         else:
             with st.spinner(t("loading_prediction")):
-                st.session_state.prediction_result = run_prediction(
-                    coin_name=coin_name,
-                    model_name=model_name,
-                    data_path=DEFAULT_DATA_PATH,
-                    days=selected_days,
-                )
+                st.session_state.prediction_result = cached_prediction_result(coin_name, model_name, selected_days)
                 st.session_state.last_coin_choice = st.session_state.coin_choice
                 st.session_state.last_model_choice = st.session_state.model_choice
                 st.session_state.last_forecast_horizon_choice = st.session_state.forecast_horizon_choice
@@ -3561,11 +3586,10 @@ def render_prediction_page() -> None:
     result = st.session_state.prediction_result
     if result is not None and result.get("model_name") == "SARIMAX" and "residual_diagnostics" not in result:
         with st.spinner(t("loading_prediction")):
-            st.session_state.prediction_result = run_prediction(
-                coin_name=result["coin_name"],
-                model_name=result["model_name"],
-                data_path=DEFAULT_DATA_PATH,
-                days=int(result.get("forecast_days", selected_days or 7)),
+            st.session_state.prediction_result = cached_prediction_result(
+                result["coin_name"],
+                result["model_name"],
+                int(result.get("forecast_days", selected_days or 7)),
             )
             result = st.session_state.prediction_result
 
@@ -3925,12 +3949,11 @@ def render_backtesting_page() -> None:
             st.warning(t("backtest_select_warning"))
         else:
             with st.spinner(t("loading_backtest")):
-                st.session_state.backtesting_result = run_backtesting(
-                    coin_name=coin_name,
-                    model_name=model_name,
-                    cutoff_date=selected_date,
-                    data_path=DEFAULT_DATA_PATH,
-                    days=selected_days,
+                st.session_state.backtesting_result = cached_backtesting_result(
+                    coin_name,
+                    model_name,
+                    selected_date.strftime("%Y-%m-%d"),
+                    selected_days,
                 )
                 st.session_state.last_backtest_coin_choice = st.session_state.backtest_coin_choice
                 st.session_state.last_backtest_model_choice = st.session_state.backtest_model_choice

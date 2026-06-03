@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from datetime import datetime, timedelta
+import os
 from pathlib import Path
 
 import numpy as np
@@ -341,6 +342,10 @@ def build_sarimax_base(df: pd.DataFrame) -> pd.DataFrame:
     return sarimax_df.dropna()
 
 
+def use_fast_sarimax_order() -> bool:
+    return os.getenv("FAST_SARIMAX", "0").strip().lower() in {"1", "true", "yes", "on"}
+
+
 def run_sarimax_prediction(coin_name: str, base_df: pd.DataFrame, days: int = 7) -> dict[str, object]:
     config = COIN_OPTIONS[coin_name]
     df = build_sarimax_base(base_df)
@@ -364,22 +369,25 @@ def run_sarimax_prediction(coin_name: str, base_df: pd.DataFrame, days: int = 7)
         columns=EXOG_COLS,
     )
 
-    auto_model = auto_arima(
-        y_train,
-        X=x_train,
-        seasonal=False,
-        start_p=0,
-        max_p=4,
-        start_q=0,
-        max_q=4,
-        d=None,
-        max_d=2,
-        trace=False,
-        error_action="ignore",
-        suppress_warnings=True,
-        stepwise=True,
-    )
-    order = auto_model.order
+    if use_fast_sarimax_order():
+        order = (1, 1, 1)
+    else:
+        auto_model = auto_arima(
+            y_train,
+            X=x_train,
+            seasonal=False,
+            start_p=0,
+            max_p=4,
+            start_q=0,
+            max_q=4,
+            d=None,
+            max_d=2,
+            trace=False,
+            error_action="ignore",
+            suppress_warnings=True,
+            stepwise=True,
+        )
+        order = auto_model.order
 
     fitted_model = SARIMAX(
         y_train,
@@ -777,26 +785,30 @@ def run_sarimax_backtest(
         index=x_train_raw.index,
         columns=EXOG_COLS,
     )
-    auto_model = auto_arima(
-        y_train,
-        X=x_train_scaled,
-        seasonal=False,
-        start_p=0,
-        max_p=4,
-        start_q=0,
-        max_q=4,
-        d=None,
-        max_d=2,
-        trace=False,
-        error_action="ignore",
-        suppress_warnings=True,
-        stepwise=True,
-    )
+    if use_fast_sarimax_order():
+        order = (1, 1, 1)
+    else:
+        auto_model = auto_arima(
+            y_train,
+            X=x_train_scaled,
+            seasonal=False,
+            start_p=0,
+            max_p=4,
+            start_q=0,
+            max_q=4,
+            d=None,
+            max_d=2,
+            trace=False,
+            error_action="ignore",
+            suppress_warnings=True,
+            stepwise=True,
+        )
+        order = auto_model.order
 
     fitted_model = SARIMAX(
         y_train,
         exog=x_train_scaled,
-        order=auto_model.order,
+        order=order,
         trend="c",
         enforce_stationarity=False,
         enforce_invertibility=False,
