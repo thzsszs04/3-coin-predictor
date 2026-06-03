@@ -464,9 +464,14 @@ div.stButton > button:first-child {
     border: none !important;
     border-radius: 8px !important;
     width: 100%;
+    min-height: 54px !important;
     margin-top: 0 !important;
     font-weight: 700 !important;
     letter-spacing: 0.5px;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    line-height: 1.25 !important;
     box-shadow: 0 4px 15px rgba(56, 217, 169, 0.2) !important;
     transition: all 0.3s ease !important;
 }
@@ -632,11 +637,15 @@ div[data-testid="stMetricLabel"],
 }
 
 .comparison-section-spacer {
-    height: 2rem;
+    height: 2.4rem;
+}
+
+.comparison-chart-spacer {
+    height: 1rem;
 }
 
 .comparison-ai-spacer {
-    height: 2.4rem;
+    height: 3rem;
 }
 
 .st-key-comparison_table_card,
@@ -665,7 +674,7 @@ div[data-testid="stMetricLabel"],
     font-size: clamp(1rem, 1.05vw, 1.22rem);
     line-height: 1.32;
     font-weight: 850;
-    margin-bottom: 0.8rem;
+    margin-bottom: 1rem;
     overflow-wrap: anywhere;
 }
 
@@ -1871,6 +1880,21 @@ iframe,
 div[data-testid="stDataFrame"] {
     max-width: 100% !important;
     box-sizing: border-box !important;
+}
+
+@media (min-width: 821px) {
+    .st-key-control_panel [data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 1.35rem !important;
+    }
+
+    .st-key-control_panel [data-testid="stHorizontalBlock"] > div {
+        width: auto !important;
+        min-width: 0 !important;
+        flex: 1 1 0 !important;
+    }
 }
 
 @media (max-width: 1366px) {

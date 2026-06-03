@@ -1390,6 +1390,24 @@ def load_css() -> str:
                 overflow-wrap: anywhere !important;
             }
         }
+
+        @media (min-width: 821px) {
+            div[data-testid="stHorizontalBlock"].stHorizontalBlock {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: flex-start !important;
+            }
+
+            div[data-testid="stColumn"].stColumn {
+                min-width: 0 !important;
+            }
+
+            div[data-testid="stHorizontalBlock"].stHorizontalBlock > div[data-testid="stColumn"].stColumn {
+                width: 0 !important;
+                flex: 1 1 0 !important;
+                max-width: none !important;
+            }
+        }
     </style>
     """
     return f"<style>{base_css}</style>{overrides}"
@@ -1944,6 +1962,15 @@ def get_gemini_model_name() -> str:
     except (FileNotFoundError, KeyError, AttributeError):
         pass
     return os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+
+
+def configure_runtime_flags() -> None:
+    try:
+        fast_sarimax_secret = st.secrets.get("FAST_SARIMAX", "")
+        if fast_sarimax_secret != "":
+            os.environ["FAST_SARIMAX"] = str(fast_sarimax_secret)
+    except (FileNotFoundError, KeyError, AttributeError):
+        pass
 
 
 def get_ssl_context() -> ssl.SSLContext:
@@ -2635,8 +2662,9 @@ def style_comparison_chart(fig: go.Figure) -> go.Figure:
     return fig
 
 
-@st.cache_data(ttl=1800, show_spinner=False)
+@st.cache_data(ttl=86400, show_spinner=False)
 def run_model_comparison(coin_name: str, data_path: str) -> dict[str, object]:
+    configure_runtime_flags()
     results = {
         model_name: run_prediction(
             coin_name=coin_name,
@@ -2727,19 +2755,25 @@ def format_comparison_table(frame: pd.DataFrame) -> pd.DataFrame:
 def comparison_error_chart(frame: pd.DataFrame) -> go.Figure:
     fig = go.Figure()
     colors = {"SARIMAX": "#4DB8FF", "XGBoost": "#38D9A9"}
+    metric_labels = ["RMSE", "MAE", "MAPE"]
+    max_values = {metric: max(float(frame[metric].max()), 1e-9) for metric in metric_labels}
+    scale_label = "Relative scale" if current_language() == "en" else "Skala relatif"
     for model_name in frame["Model"]:
         row = frame[frame["Model"] == model_name].iloc[0]
+        actual_values = [float(row[metric]) for metric in metric_labels]
+        scaled_values = [(float(row[metric]) / max_values[metric]) * 100 for metric in metric_labels]
         fig.add_trace(
             go.Bar(
-                x=["RMSE", "MAE", "MAPE"],
-                y=[row["RMSE"], row["MAE"], row["MAPE"]],
+                x=metric_labels,
+                y=scaled_values,
+                customdata=actual_values,
                 name=model_name,
                 marker_color=colors.get(model_name, "#C0CAD8"),
-                hovertemplate="<b>%{fullData.name}</b><br>%{x}: %{y:,.2f}<extra></extra>",
+                hovertemplate=f"<b>%{{fullData.name}}</b><br>%{{x}}: %{{customdata:,.2f}}<br>{scale_label}: %{{y:,.1f}}%<extra></extra>",
             )
         )
     fig.update_layout(barmode="group")
-    fig.update_yaxes(type="log", title_text="Log scale")
+    fig.update_yaxes(range=[0, 112], ticksuffix="%", title_text=scale_label)
     return style_comparison_chart(fig)
 
 
@@ -2916,6 +2950,7 @@ def get_dataset_frame() -> pd.DataFrame:
 
 @st.cache_data(ttl=86400, show_spinner=False)
 def cached_prediction_result(coin_name: str, model_name: str, days: int) -> dict[str, object]:
+    configure_runtime_flags()
     return run_prediction(
         coin_name=coin_name,
         model_name=model_name,
@@ -2931,6 +2966,7 @@ def cached_backtesting_result(
     cutoff_date_iso: str,
     days: int,
 ) -> dict[str, object]:
+    configure_runtime_flags()
     return run_backtesting(
         coin_name=coin_name,
         model_name=model_name,
@@ -3703,7 +3739,7 @@ def render_comparison_controls() -> tuple[str | None, bool]:
         st.session_state.comparison_coin_choice = st.session_state.last_comparison_coin_choice
 
     with st.container(key="control_panel"):
-        control_cols = st.columns([1.18, 0.72, 0.46], gap="large", vertical_alignment="top")
+        control_cols = st.columns([1.12, 1], gap="large", vertical_alignment="top")
         with control_cols[0]:
             coin_display = st.selectbox(
                 t("choose_coin"),
@@ -3715,10 +3751,11 @@ def render_comparison_controls() -> tuple[str | None, bool]:
             st.markdown(f"<div class='control-help'>{t('coin_options')}</div>", unsafe_allow_html=True)
         with control_cols[1]:
             st.markdown(f"<div class='button-label-spacer'>{t('action')}</div>", unsafe_allow_html=True)
-            clicked = st.button(t("comparison_start"), use_container_width=True)
-        with control_cols[2]:
-            st.markdown(f"<div class='button-label-spacer'>{t('action')}</div>", unsafe_allow_html=True)
-            st.button(t("reset_date"), key="comparison_reset_button", use_container_width=True, on_click=clear_comparison_controls)
+            action_cols = st.columns([1.45, 0.85], gap="medium", vertical_alignment="top")
+            with action_cols[0]:
+                clicked = st.button(t("comparison_start"), use_container_width=True)
+            with action_cols[1]:
+                st.button(t("reset_date"), key="comparison_reset_button", use_container_width=True, on_click=clear_comparison_controls)
 
     coin_name = coin_name_from_display(coin_display) if coin_display else None
     return coin_name, clicked
@@ -3726,15 +3763,14 @@ def render_comparison_controls() -> tuple[str | None, bool]:
 
 def render_comparison_placeholders() -> None:
     st.markdown('<div class="comparison-section-spacer"></div>', unsafe_allow_html=True)
-    first_row = st.columns(2, gap="large")
-    with first_row[0]:
-        with st.container(key="comparison_table_card"):
-            st.markdown(f'<div class="comparison-card-title">{t("comparison_table_title")}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="placeholder comparison-placeholder">{t("comparison_table_placeholder")}</div>', unsafe_allow_html=True)
-    with first_row[1]:
-        with st.container(key="comparison_error_card"):
-            st.markdown(f'<div class="comparison-card-title">{t("comparison_error_title")}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="placeholder comparison-placeholder">{t("comparison_error_placeholder")}</div>', unsafe_allow_html=True)
+    with st.container(key="comparison_table_card"):
+        st.markdown(f'<div class="comparison-card-title">{t("comparison_table_title")}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="placeholder comparison-placeholder">{t("comparison_table_placeholder")}</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="comparison-chart-spacer"></div>', unsafe_allow_html=True)
+    with st.container(key="comparison_error_card"):
+        st.markdown(f'<div class="comparison-card-title">{t("comparison_error_title")}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="placeholder comparison-placeholder">{t("comparison_error_placeholder")}</div>', unsafe_allow_html=True)
 
     second_row = st.columns(2, gap="large")
     with second_row[0]:
@@ -3752,9 +3788,7 @@ def render_comparison_placeholders() -> None:
 
 def render_comparison_page() -> None:
     render_header(title=t("comparison_title"), subtitle=t("comparison_subtitle"))
-    top_cols = st.columns([1.25, 0.9], gap="large", vertical_alignment="top")
-    with top_cols[0]:
-        coin_name, clicked = render_comparison_controls()
+    coin_name, clicked = render_comparison_controls()
 
     if clicked:
         if not coin_name:
@@ -3772,8 +3806,8 @@ def render_comparison_page() -> None:
         st.session_state.comparison_result = None
         result = None
 
-    with top_cols[1]:
-        render_comparison_best_cards(result)
+    st.markdown('<div class="comparison-section-spacer"></div>', unsafe_allow_html=True)
+    render_comparison_best_cards(result)
 
     if result is None:
         render_comparison_placeholders()
@@ -3781,15 +3815,14 @@ def render_comparison_page() -> None:
 
     table = result["comparison_table"]
     st.markdown('<div class="comparison-section-spacer"></div>', unsafe_allow_html=True)
-    first_row = st.columns(2, gap="large")
-    with first_row[0]:
-        with st.container(key="comparison_table_card"):
-            st.markdown(f'<div class="comparison-card-title">{t("comparison_table_title")}</div>', unsafe_allow_html=True)
-            st.dataframe(format_comparison_table(table), use_container_width=True, hide_index=True, height=180)
-    with first_row[1]:
-        with st.container(key="comparison_error_card"):
-            st.markdown(f'<div class="comparison-card-title">{t("comparison_error_title")}</div>', unsafe_allow_html=True)
-            st.plotly_chart(comparison_error_chart(table), use_container_width=True)
+    with st.container(key="comparison_table_card"):
+        st.markdown(f'<div class="comparison-card-title">{t("comparison_table_title")}</div>', unsafe_allow_html=True)
+        st.dataframe(format_comparison_table(table), use_container_width=True, hide_index=True, height=180)
+
+    st.markdown('<div class="comparison-chart-spacer"></div>', unsafe_allow_html=True)
+    with st.container(key="comparison_error_card"):
+        st.markdown(f'<div class="comparison-card-title">{t("comparison_error_title")}</div>', unsafe_allow_html=True)
+        st.plotly_chart(comparison_error_chart(table), use_container_width=True)
 
     second_row = st.columns(2, gap="large")
     with second_row[0]:
