@@ -30,7 +30,7 @@ from src.predictor import COIN_OPTIONS, DEFAULT_DATA_PATH, MODEL_OPTIONS, load_d
 APP_TITLE = "3-Coin Predictor"
 TIMEZONE = ZoneInfo("Asia/Jakarta")
 STYLE_PATH = Path(__file__).with_name("style.css")
-AI_INSIGHT_CACHE_VERSION = "model-limitations-v11"
+AI_INSIGHT_CACHE_VERSION = "ai-output-budget-v12"
 
 TEXT = {
     "id": {
@@ -2323,7 +2323,7 @@ def request_gemini_insight(prompt: str, api_key: str, model_name: str, cache_ver
         "generationConfig": {
             "temperature": 0.35,
             "topP": 0.9,
-            "maxOutputTokens": 1536,
+            "maxOutputTokens": 4096,
         },
     }
     errors = []
