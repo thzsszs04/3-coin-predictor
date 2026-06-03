@@ -49,6 +49,8 @@ python3 scripts/precompute_results.py
 
 Commit the updated `data/precomputed_results.pkl` after regenerating it.
 
+The snapshot is also refreshed automatically by GitHub Actions every day at 01:30 WIB. You can trigger the same refresh manually from the repository's Actions tab by running the `Refresh precomputed forecasts` workflow.
+
 ## Recommended Deployment
 
 This project is a Streamlit app, so the recommended public deployment target is Streamlit Community Cloud.
