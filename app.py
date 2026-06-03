@@ -2283,7 +2283,6 @@ def request_gemini_insight(prompt: str, api_key: str, model_name: str, cache_ver
             "temperature": 0.35,
             "topP": 0.9,
             "maxOutputTokens": 1536,
-            "thinkingConfig": {"thinkingBudget": 0},
         },
     }
     errors = []
@@ -2311,7 +2310,13 @@ def request_gemini_insight(prompt: str, api_key: str, model_name: str, cache_ver
                     insight_text += f"\n\nCatatan teknis: respons Gemini berhenti dengan status {finish_reason}."
                 return insight_text
             errors.append(f"{candidate_model}: Gemini mengembalikan respons kosong.")
-        except (urllib.error.HTTPError, urllib.error.URLError, KeyError, IndexError, json.JSONDecodeError, TimeoutError) as exc:
+        except urllib.error.HTTPError as exc:
+            try:
+                error_body = exc.read().decode("utf-8")
+            except (UnicodeDecodeError, OSError):
+                error_body = str(exc)
+            errors.append(f"{candidate_model}: HTTP {exc.code} - {error_body[:240]}")
+        except (urllib.error.URLError, KeyError, IndexError, json.JSONDecodeError, TimeoutError) as exc:
             errors.append(f"{candidate_model}: {exc}")
 
     return "Insight AI belum dapat dimuat. Detail teknis: " + " | ".join(errors)
