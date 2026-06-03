@@ -393,6 +393,7 @@
 [data-testid="stSidebar"] div.stButton > button:first-child {
     position: relative;
     justify-content: flex-start !important;
+    gap: 12px !important;
     min-height: 48px !important;
     padding: 12px 16px !important;
     border-radius: 8px !important;
@@ -407,6 +408,41 @@
     margin: 0 0 8px 0 !important;
     transition: all 0.2s ease !important;
     overflow: hidden !important;
+}
+
+[data-testid="stSidebar"] div.stButton > button:first-child::before {
+    content: "";
+    flex: 0 0 1.24rem;
+    width: 1.24rem;
+    height: 1.24rem;
+    display: inline-block;
+    background: currentColor;
+    -webkit-mask: var(--nav-icon-mask) center / contain no-repeat;
+    mask: var(--nav-icon-mask) center / contain no-repeat;
+}
+
+.st-key-nav_prediksi {
+    --nav-icon-mask: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M3%2010.8%2012%203l9%207.8v9.7a1.5%201.5%200%200%201-1.5%201.5H15v-6h-4v6H4.5A1.5%201.5%200%200%201%203%2020.5v-9.7Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.st-key-nav_komparasi {
+    --nav-icon-mask: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M3%2020h18M5%2016l4-5%204%203%205-8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222.3%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.st-key-nav_backtesting {
+    --nav-icon-mask: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207h14M5%2017h14M8%204%205%207l3%203M16%2014l3%203-3%203%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222.3%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.st-key-nav_variabel {
+    --nav-icon-mask: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%203%2022%2020H2L12%203Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M12%209v5M12%2017.5h.01%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.st-key-nav_dataset {
+    --nav-icon-mask: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%205c4.4%200%208%201.6%208%203.5S16.4%2012%2012%2012%204%2010.4%204%208.5%207.6%205%2012%205Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%2F%3E%3Cpath%20d%3D%22M4%208.5v7C4%2017.4%207.6%2019%2012%2019s8-1.6%208-3.5v-7M4%2012c0%201.9%203.6%203.5%208%203.5s8-1.6%208-3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.st-key-nav_metode {
+    --nav-icon-mask: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M4%205.5A2.5%202.5%200%200%201%206.5%203H11v17H6.5A2.5%202.5%200%200%200%204%2022V5.5ZM20%205.5A2.5%202.5%200%200%200%2017.5%203H13v17h4.5A2.5%202.5%200%200%201%2020%2022V5.5Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 
 [data-testid="stSidebar"] div.stButton > button:first-child:hover {
@@ -1069,6 +1105,16 @@ div[data-testid="stMetricLabel"],
     width: 1.35rem;
     height: 1.35rem;
     display: block;
+}
+
+.method-book-icon::before {
+    content: "";
+    width: 1.45rem;
+    height: 1.45rem;
+    display: block;
+    background: #38D9A9;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M4%205.5A2.5%202.5%200%200%201%206.5%203H11v17H6.5A2.5%202.5%200%200%200%204%2022V5.5ZM20%205.5A2.5%202.5%200%200%200%2017.5%203H13v17h4.5A2.5%202.5%200%200%201%2020%2022V5.5Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M4%205.5A2.5%202.5%200%200%201%206.5%203H11v17H6.5A2.5%202.5%200%200%200%204%2022V5.5ZM20%205.5A2.5%202.5%200%200%200%2017.5%203H13v17h4.5A2.5%202.5%200%200%201%2020%2022V5.5Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") center / contain no-repeat;
 }
 
 .method-intro h3,

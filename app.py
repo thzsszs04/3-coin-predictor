@@ -1515,14 +1515,13 @@ def current_page() -> str:
 def build_sidebar() -> str:
     selected_page = current_page()
     pages = [
-        ("prediksi", ICON_SVG["home"], t("nav_prediction")),
-        ("komparasi", ICON_SVG["chart"], t("nav_comparison")),
-        ("backtesting", ICON_SVG["backtest"], t("nav_backtesting")),
-        ("variabel", ICON_SVG["alert"], t("nav_variable")),
-        ("dataset", ICON_SVG["database"], t("nav_dataset")),
-        ("metode", ICON_SVG["book"], t("nav_method")),
+        ("prediksi", "home", ICON_SVG["home"], t("nav_prediction")),
+        ("komparasi", "chart", ICON_SVG["chart"], t("nav_comparison")),
+        ("backtesting", "backtest", ICON_SVG["backtest"], t("nav_backtesting")),
+        ("variabel", "alert", ICON_SVG["alert"], t("nav_variable")),
+        ("dataset", "database", ICON_SVG["database"], t("nav_dataset")),
+        ("metode", "book", ICON_SVG["book"], t("nav_method")),
     ]
-    language = current_language()
 
     with st.sidebar:
         st.markdown(
@@ -1541,21 +1540,23 @@ def build_sidebar() -> str:
             """,
             unsafe_allow_html=True,
         )
-        for key, icon, label in pages:
+        for key, _icon_name, icon, label in pages:
             active = "active" if key == selected_page else ""
-            href = f"?page={key}&lang={language}"
-            tag = "div" if active else "a"
-            href_attr = "" if active else f' href="{href}" target="_self"'
-            aria_current = ' aria-current="page"' if active else ""
-            st.markdown(
-                f"""
-                <{tag} class="nav-link {active}"{href_attr}{aria_current}>
-                    <span class="nav-icon">{icon}</span>
-                    <span class="nav-text">{label}</span>
-                </{tag}>
-                """,
-                unsafe_allow_html=True,
-            )
+            clean_label = label.replace("<br>", " ")
+            if active:
+                st.markdown(
+                    f"""
+                    <div class="nav-link active" aria-current="page">
+                        <span class="nav-icon">{icon}</span>
+                        <span class="nav-text">{label}</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            elif st.button(clean_label, key=f"nav_{key}", use_container_width=True):
+                st.query_params["page"] = key
+                st.query_params["lang"] = current_language()
+                st.rerun()
 
         st.markdown(
             """
@@ -4480,7 +4481,7 @@ def render_method_page() -> None:
     st.html(
         f"""
         <section class="method-intro">
-            <div class="method-intro-icon">{ICON_SVG["book"]}</div>
+            <div class="method-intro-icon method-book-icon"></div>
             <div>
                 <p class="method-badge">{html.escape(labels["intro"])}</p>
                 <p>{html.escape(t("method_intro_body"))}</p>
