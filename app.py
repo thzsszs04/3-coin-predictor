@@ -30,7 +30,7 @@ from src.predictor import COIN_OPTIONS, DEFAULT_DATA_PATH, MODEL_OPTIONS, load_d
 APP_TITLE = "3-Coin Predictor"
 TIMEZONE = ZoneInfo("Asia/Jakarta")
 STYLE_PATH = Path(__file__).with_name("style.css")
-AI_INSIGHT_CACHE_VERSION = "ai-output-budget-v12"
+AI_INSIGHT_CACHE_VERSION = "backtest-visible-context-v13"
 
 TEXT = {
     "id": {
@@ -2251,7 +2251,6 @@ def build_backtest_ai_prompt(result: dict, news_context: list[dict[str, str]]) -
     table = result["comparison_table"].copy()
     table["Date"] = pd.to_datetime(table["Date"]).dt.strftime("%Y-%m-%d")
     table_payload = table[["Date", "Actual Price", "Predicted Price", "Error", "Trend"]].to_dict(orient="records")
-    metrics_payload = {key: format_metric(key, value) for key, value in result["metrics"].items()}
     news_payload = [
         {
             "title": item.get("title", ""),
@@ -2266,11 +2265,12 @@ def build_backtest_ai_prompt(result: dict, news_context: list[dict[str, str]]) -
 Write a public-friendly backtesting insight in English.
 Do not use greetings or conversational filler. Do not give buy/sell advice.
 Use short bullet points only.
+Only discuss information visible on the backtesting page: chart movement, table rows, trend labels, selected period, confidence level, and news context.
+Do not mention hidden evaluation metrics such as R2, RMSE, MAE, MAPE, Directional Accuracy, or Cumulative Return.
 
 Coin: {result["coin_name"]}
 Model: {result["model_name"]}
 Backtesting table: {json.dumps(table_payload, ensure_ascii=False)}
-Metrics: {json.dumps(metrics_payload, ensure_ascii=False)}
 Confidence: {result["confidence_score"]:.2f}% ({result["confidence_level"]})
 News context: {json.dumps(news_payload, ensure_ascii=False)}
 
@@ -2290,11 +2290,12 @@ Use exactly this format:
 Tulis insight backtesting dalam Bahasa Indonesia yang mudah dipahami publik.
 Jangan gunakan sapaan atau filler percakapan. Jangan memberi saran beli/jual.
 Gunakan bullet pendek saja.
+Hanya bahas informasi yang terlihat di halaman backtesting: pergerakan chart, baris tabel, label trend, periode yang dipilih, confidence level, dan konteks berita.
+Jangan menyebut metrik evaluasi yang tidak ditampilkan seperti R2, RMSE, MAE, MAPE, Directional Accuracy, atau Cumulative Return.
 
 Koin: {result["coin_name"]}
 Model: {result["model_name"]}
 Tabel backtesting: {json.dumps(table_payload, ensure_ascii=False)}
-Metrik: {json.dumps(metrics_payload, ensure_ascii=False)}
 Confidence: {result["confidence_score"]:.2f}% ({result["confidence_level"]})
 Konteks berita: {json.dumps(news_payload, ensure_ascii=False)}
 
