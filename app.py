@@ -7,6 +7,7 @@ import os
 import pickle
 import re
 import ssl
+import sys
 from datetime import datetime
 from pathlib import Path
 import urllib.error
@@ -2973,9 +2974,15 @@ def load_precomputed_results() -> dict[str, object] | None:
     if not PRECOMPUTED_RESULTS_PATH.exists():
         return None
     try:
+        try:
+            import numpy.core.numeric as numpy_core_numeric
+        except ImportError:
+            numpy_core_numeric = None
+        if numpy_core_numeric is not None:
+            sys.modules.setdefault("numpy._core.numeric", numpy_core_numeric)
         with PRECOMPUTED_RESULTS_PATH.open("rb") as file:
             return pickle.load(file)
-    except (OSError, pickle.PickleError, EOFError, AttributeError):
+    except (OSError, pickle.PickleError, EOFError, AttributeError, ImportError, ModuleNotFoundError):
         return None
 
 
