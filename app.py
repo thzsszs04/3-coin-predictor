@@ -329,7 +329,7 @@ TEXT = {
 
 st.set_page_config(
     page_title=APP_TITLE,
-    page_icon="📈",
+    page_icon="3",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -679,11 +679,17 @@ def load_css() -> str:
 
         .nav-icon {
             width: 1.8rem;
-            font-size: 1.25rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             margin-right: 0;
+            color: currentColor;
+        }
+
+        .nav-icon svg {
+            width: 1.24rem;
+            height: 1.24rem;
+            display: block;
         }
 
         .nav-text {
@@ -1487,6 +1493,19 @@ def forecast_title(days: int) -> str:
     return t("seven_day_title").format(days=days)
 
 
+ICON_SVG = {
+    "home": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8v9.7a1.5 1.5 0 0 1-1.5 1.5H15v-6h-4v6H4.5A1.5 1.5 0 0 1 3 20.5v-9.7Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+    "chart": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M5 16l4-5 4 3 5-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 8v8M13 10v4M19 4v12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".45"/></svg>',
+    "backtest": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 17h14M8 4 5 7l3 3M16 14l3 3-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    "alert": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 22 20H2L12 3Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 9v5M12 17.5h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+    "database": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c4.4 0 8 1.6 8 3.5S16.4 12 12 12 4 10.4 4 8.5 7.6 5 12 5Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 8.5v7C4 17.4 7.6 19 12 19s8-1.6 8-3.5v-7M4 12c0 1.9 3.6 3.5 8 3.5s8-1.6 8-3.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+    "book": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v17H6.5A2.5 2.5 0 0 0 4 22V5.5ZM20 5.5A2.5 2.5 0 0 0 17.5 3H13v17h4.5A2.5 2.5 0 0 1 20 22V5.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    "lightbulb": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5c-1.4-1.2-2.3-3-2.3-5A5.8 5.8 0 0 1 12 3.7a5.8 5.8 0 0 1 5.8 5.8c0 2-.9 3.8-2.3 5-.8.7-1.2 1.4-1.3 2.4H9.8c-.1-1-.5-1.7-1.3-2.4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20h4M10 17h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+}
+
+AI_INSIGHT_ICON = ICON_SVG["lightbulb"]
+
+
 def current_page() -> str:
     page = st.query_params.get("page", "prediksi")
     valid_pages = {"prediksi", "komparasi", "variabel", "dataset", "backtesting", "metode"}
@@ -1496,13 +1515,14 @@ def current_page() -> str:
 def build_sidebar() -> str:
     selected_page = current_page()
     pages = [
-        ("prediksi", "🏠", t("nav_prediction")),
-        ("komparasi", "📈", t("nav_comparison")),
-        ("backtesting", "↔️", t("nav_backtesting")),
-        ("variabel", "❗", t("nav_variable")),
-        ("dataset", "🗄️", t("nav_dataset")),
-        ("metode", "📚", t("nav_method")),
+        ("prediksi", ICON_SVG["home"], t("nav_prediction")),
+        ("komparasi", ICON_SVG["chart"], t("nav_comparison")),
+        ("backtesting", ICON_SVG["backtest"], t("nav_backtesting")),
+        ("variabel", ICON_SVG["alert"], t("nav_variable")),
+        ("dataset", ICON_SVG["database"], t("nav_dataset")),
+        ("metode", ICON_SVG["book"], t("nav_method")),
     ]
+    language = current_language()
 
     with st.sidebar:
         st.markdown(
@@ -1523,21 +1543,19 @@ def build_sidebar() -> str:
         )
         for key, icon, label in pages:
             active = "active" if key == selected_page else ""
-            clean_label = label.replace("<br>", " ")
-            if active:
-                st.markdown(
-                    f"""
-                    <div class="nav-link active">
-                        <span class="nav-icon">{icon}</span>
-                        <span class="nav-text">{label}</span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-            elif st.button(f"{icon} {clean_label}", key=f"nav_{key}", use_container_width=True):
-                st.query_params["page"] = key
-                st.query_params["lang"] = current_language()
-                st.rerun()
+            href = f"?page={key}&lang={language}"
+            tag = "div" if active else "a"
+            href_attr = "" if active else f' href="{href}"'
+            aria_current = ' aria-current="page"' if active else ""
+            st.markdown(
+                f"""
+                <{tag} class="nav-link {active}"{href_attr}{aria_current}>
+                    <span class="nav-icon">{icon}</span>
+                    <span class="nav-text">{label}</span>
+                </{tag}>
+                """,
+                unsafe_allow_html=True,
+            )
 
         st.markdown(
             """
@@ -2435,7 +2453,7 @@ def render_ai_insight(result: dict) -> None:
             st.markdown(
                 (
                     '<div class="ai-insight-title">'
-                    '<span class="ai-insight-icon">💡</span>'
+                    f'<span class="ai-insight-icon">{AI_INSIGHT_ICON}</span>'
                     "<span>AI Insight</span>"
                     "</div>"
                     '<div class="ai-insight-divider"></div>'
@@ -2459,7 +2477,7 @@ def render_ai_insight(result: dict) -> None:
         st.markdown(
             (
                 '<div class="ai-insight-title">'
-                '<span class="ai-insight-icon">💡</span>'
+                f'<span class="ai-insight-icon">{AI_INSIGHT_ICON}</span>'
                 "<span>AI Insight</span>"
                 "</div>"
                 '<div class="ai-insight-divider"></div>'
@@ -2492,7 +2510,7 @@ def render_backtest_ai_insight(result: dict) -> None:
         st.markdown(
             (
                 '<div class="ai-insight-title">'
-                '<span class="ai-insight-icon">💡</span>'
+                f'<span class="ai-insight-icon">{AI_INSIGHT_ICON}</span>'
                 "<span>AI Insight</span>"
                 "</div>"
                 '<div class="ai-insight-divider"></div>'
@@ -2897,7 +2915,7 @@ def render_comparison_ai_insight(result: dict[str, object] | None) -> None:
             f"""
             <section class="ai-insight-card comparison-ai-card">
                 <div class="ai-insight-title">
-                    <span class="ai-insight-icon">💡</span>
+                    <span class="ai-insight-icon">{AI_INSIGHT_ICON}</span>
                     <span>AI Insight</span>
                 </div>
                 <div class="ai-insight-divider"></div>
@@ -2915,7 +2933,7 @@ def render_comparison_ai_insight(result: dict[str, object] | None) -> None:
             f"""
             <section class="ai-insight-card comparison-ai-card">
                 <div class="ai-insight-title">
-                    <span class="ai-insight-icon">💡</span>
+                    <span class="ai-insight-icon">{AI_INSIGHT_ICON}</span>
                     <span>AI Insight</span>
                 </div>
                 <div class="ai-insight-divider"></div>
@@ -2934,7 +2952,7 @@ def render_comparison_ai_insight(result: dict[str, object] | None) -> None:
         st.markdown(
             (
                 '<div class="ai-insight-title">'
-                '<span class="ai-insight-icon">💡</span>'
+                f'<span class="ai-insight-icon">{AI_INSIGHT_ICON}</span>'
                 "<span>AI Insight</span>"
                 "</div>"
                 '<div class="ai-insight-divider"></div>'
@@ -3725,7 +3743,7 @@ def render_prediction_page() -> None:
             f"""
             <section class="ai-insight-card">
                 <div class="ai-insight-title">
-                    <span class="ai-insight-icon">💡</span>
+                    <span class="ai-insight-icon">{AI_INSIGHT_ICON}</span>
                     <span>AI Insight</span>
                 </div>
                 <div class="ai-insight-divider"></div>
@@ -4120,7 +4138,7 @@ def render_backtesting_page() -> None:
             f"""
             <section class="ai-insight-card">
                 <div class="ai-insight-title">
-                    <span class="ai-insight-icon">💡</span>
+                    <span class="ai-insight-icon">{AI_INSIGHT_ICON}</span>
                     <span>AI Insight</span>
                 </div>
                 <div class="ai-insight-divider"></div>
@@ -4462,7 +4480,7 @@ def render_method_page() -> None:
     st.html(
         f"""
         <section class="method-intro">
-            <div class="method-intro-icon">📚</div>
+            <div class="method-intro-icon">{ICON_SVG["book"]}</div>
             <div>
                 <p class="method-badge">{html.escape(labels["intro"])}</p>
                 <p>{html.escape(t("method_intro_body"))}</p>

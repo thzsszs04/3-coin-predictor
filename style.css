@@ -380,6 +380,16 @@
     z-index: 2;
 }
 
+.nav-icon {
+    color: currentColor;
+}
+
+.nav-icon svg {
+    width: 1.24rem;
+    height: 1.24rem;
+    display: block;
+}
+
 [data-testid="stSidebar"] div.stButton > button:first-child {
     position: relative;
     justify-content: flex-start !important;
@@ -1055,6 +1065,12 @@ div[data-testid="stMetricLabel"],
     box-shadow: 0 0 18px rgba(56, 217, 169, 0.16);
 }
 
+.method-intro-icon svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    display: block;
+}
+
 .method-intro h3,
 .method-card h3,
 .method-card h4,
@@ -1683,6 +1699,12 @@ div[data-testid="stDataFrame"] {
     color: #38D9A9;
     background: rgba(56, 217, 169, 0.08);
     box-shadow: 0 0 16px rgba(56, 217, 169, 0.14);
+}
+
+.ai-insight-icon svg {
+    width: 18px;
+    height: 18px;
+    display: block;
 }
 
 .ai-insight-divider {
