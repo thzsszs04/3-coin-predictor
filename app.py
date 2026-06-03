@@ -1217,8 +1217,7 @@ def load_css() -> str:
                 padding-right: 8px !important;
             }
 
-            .footer-left,
-            .footer-right {
+            .footer-main {
                 width: 100% !important;
                 justify-content: center !important;
                 text-align: center !important;
@@ -1536,6 +1535,21 @@ def build_sidebar() -> str:
                 st.query_params["page"] = key
                 st.query_params["lang"] = current_language()
                 st.rerun()
+
+        st.markdown(
+            """
+            <div class="sidebar-footer">
+                <span class="sidebar-footer-label">Connect with me:</span>
+                <a class="footer-linkedin sidebar-linkedin" href="https://www.linkedin.com/in/thaddeuska/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Thaddeus Kendrick Andrian">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27ZM5.32 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12Zm1.78 13.02H3.54V9H7.1v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0Z"/>
+                    </svg>
+                    <span>LinkedIn</span>
+                </a>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     return selected_page
 
@@ -4427,7 +4441,7 @@ def render_footer() -> None:
     st.markdown(
         """
         <footer class="app-footer">
-            <div class="footer-left">
+            <div class="footer-main">
                 <span>© 2025 Thaddeus Kendrick Andrian</span>
                 <span class="footer-separator">•</span>
                 <span>2602207054</span>
@@ -4435,15 +4449,6 @@ def render_footer() -> None:
                 <span>Computer Science and Statistics</span>
                 <span class="footer-separator">•</span>
                 <span>Universitas Bina Nusantara</span>
-            </div>
-            <div class="footer-right">
-                <span>Connect with me:</span>
-                <a class="footer-linkedin" href="https://www.linkedin.com/in/thaddeuska/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Thaddeus Kendrick Andrian">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27ZM5.32 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12Zm1.78 13.02H3.54V9H7.1v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0Z"/>
-                    </svg>
-                    <span>LinkedIn</span>
-                </a>
             </div>
         </footer>
         """,
